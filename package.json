@@ -1,0 +1,48 @@
+{
+  "name": "fluent-client",
+  "version": "0.1.0",
+  "description": "Build fluent api client",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest --verbose --no-cache",
+    "babel": "babel --presets es2015,stage-0 --ignore node_modules,**/__tests__/*,**/__mocks__/*",
+    "clean": "rimraf ./dist && mkdir ./dist",
+    "build": "npm run clean && npm run babel -- ./src -d ./dist",
+    "prepublish": "npm run build"
+  },
+  "keywords": [
+    "es6",
+    "api",
+    "http",
+    "client",
+    "restful"
+  ],
+  "author": "Alex Hu <askinnyworm@gmail.com> (https://github.com/skinnyworm)",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.13.1"
+  },
+  "devDependencies": {
+    "babel": "^6.5.2",
+    "babel-cli": "^6.10.1",
+    "babel-jest": "^12.1.0",
+    "babel-plugin-syntax-async-functions": "^6.8.0",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "isomorphic-fetch": "^2.2.1",
+    "jest-cli": "^12.1.1",
+    "rimraf": "^2.5.2"
+  },
+  "jest": {
+    "scriptPreprocessor": "<rootDir>/node_modules/babel-jest",
+    "unmockedModulePathPatterns": [
+      "<rootDir>/node_modules/lodash"
+    ],
+    "preprocessorIgnorePatterns":[
+      "/node_modules/"
+    ],
+    "testPathIgnorePatterns": [
+      "node_modules"
+    ]
+  }
+}
