@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "Build fluent api client",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/skinnyworm/fluent-client.git"
+  },
   "scripts": {
     "test": "jest --verbose --no-cache",
     "babel": "babel --presets es2015,stage-0 --ignore node_modules,**/__tests__/*,**/__mocks__/*",
