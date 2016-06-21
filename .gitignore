@@ -12,6 +12,7 @@
 *.xml
 .DS_Store
 .project
+dist
 coverage
 node_modules
 npm-debug.log
