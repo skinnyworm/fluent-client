@@ -12,8 +12,7 @@
     "babel": "babel --presets es2015,stage-0 --ignore node_modules,**/__tests__/*,**/__mocks__/*",
     "clean": "rimraf ./dist && mkdir ./dist",
     "build": "npm run clean && npm run babel -- ./src -d ./dist",
-    "prepublish": "npm run build",
-    "preinstall": "npm run build"
+    "prepublish": "npm run build"
   },
   "keywords": [
     "es6",
