@@ -78,7 +78,7 @@ function buildConfig(initial){
     },
 
     relation: (opts, cfg)=>{
-      let {type, name, path} = opts;
+      let {type, name, path, template} = opts;
 
       if(!name){
         throw "Must specify a relation name"
@@ -89,8 +89,11 @@ function buildConfig(initial){
       }
 
       path = path || `/${name}`
-      const relation = buildConfig({}||base)
-      cfg(relation);
+      const relation = buildConfig(template || {})
+      if(cfg){
+        cfg(relation);
+      }
+
       _config = merge(_config, {relations: {[type]: {[name]: relation.config()}}})
     }
   }

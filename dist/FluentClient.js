@@ -112,6 +112,7 @@ function buildConfig(initial) {
       var type = opts.type;
       var name = opts.name;
       var path = opts.path;
+      var template = opts.template;
 
 
       if (!name) {
@@ -123,8 +124,11 @@ function buildConfig(initial) {
       }
 
       path = path || '/' + name;
-      var relation = buildConfig({} || base);
-      cfg(relation);
+      var relation = buildConfig(template || {});
+      if (cfg) {
+        cfg(relation);
+      }
+
       _config = (0, _merge2.default)(_config, { relations: _defineProperty({}, type, _defineProperty({}, name, relation.config())) });
     }
   };
