@@ -1,6 +1,6 @@
 import merge from 'lodash/merge';
 import buildMethod from './buildMethod';
-import {Http} from './Http';
+import Http from './Http';
 import {RestfulModel} from './templates';
 
 function apiObject(opts={}){

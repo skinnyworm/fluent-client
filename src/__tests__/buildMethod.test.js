@@ -4,12 +4,7 @@ describe('buildMethod', ()=>{
   let buildMethod, http
 
   beforeEach(()=>{
-    http = {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn()
-    }
+    http = require('../Http').default();
     buildMethod = require('../buildMethod').default;
   });
 
@@ -72,6 +67,19 @@ describe('buildMethod', ()=>{
       get("test", "that");
       const [path, args] = http.get.mock.calls[0];
       expect(args).toEqual({combined:'test:that'});
+    });
+
+    it('can invoke success handler once request is done successfully', ()=>{
+      const success = jest.fn();
+      const get = buildMethod('/MyApi', http, {
+        verb: 'get',
+        success
+      });
+
+      return get().then(()=>{
+        expect(success.mock.calls.length).toBe(1);
+      });
+
     });
   });
 

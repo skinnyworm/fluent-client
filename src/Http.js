@@ -16,17 +16,12 @@ export const jsonFormat = {
   decode: (response)=>{
     const contentType = response.headers.get('Content-Type');
     const contentLength = response.headers.get('Content-Length');
-
-    if(Number(contentLength) > 0){
-      return response.json().then(json => {
-        if (!response.ok) {
-          return Promise.reject(json)
-        }
-        return json;
-      })
-    }else{
-      return response.ok ? Promise.resolve(true) : Promise.reject(false);
-    }
+    return response.json().catch(err=>({})).then(json=>{
+      if (!response.ok) {
+        return Promise.reject(json)
+      }
+      return json;
+    })
   }
 }
 
@@ -96,11 +91,18 @@ export default function Http(opts={}){
       return fetch(buildUrl(path), fetchOptions).then(format.decode);
     },
 
-    delete(path){
-      return fetch(buildUrl(path),{
+    delete(path, data){
+      const {body, headers:contentTypeHeaders} = format.encode(data);
+      let fetchOptions = {
         method: 'DELETE',
-        headers: buildHeaders(),
-      }).then(format.decode);
+        headers: buildHeaders(contentTypeHeaders),
+      }
+
+      if(!isEmpty(body)){
+        fetchOptions = merge(fetchOptions, {body});
+      }
+
+      return fetch(buildUrl(path), fetchOptions).then(format.decode);
     }
   }
 }

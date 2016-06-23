@@ -51,26 +51,30 @@ const remote = (http)=>{
     }
   }
 
+  const successFn = ({success})=>{
+    return !!success ? success : (result)=>result;
+  }
+
 
   return{
     get: (base, opts)=>(...args)=>{
       const {path, props:params} = resolveArgs(args, merge(opts, {base, props:null, convertFn:opts.params}));
-      return http.get(path, params);
+      return http.get(path, params).then(successFn(opts));
     },
 
     post: (base, opts)=>(...args)=>{
       const {path, props:data} = resolveArgs(args, merge(opts, {base, props:args[0], convertFn:opts.data}));
-      return http.post(path, data);
+      return http.post(path, data).then(successFn(opts));
     },
 
     put: (base, opts)=>(...args)=>{
       const {path, props:data} = resolveArgs(args, merge(opts, {base, props:args[0], convertFn:opts.data}));
-      return http.put(path, data);
+      return http.put(path, data).then(successFn(opts));
     },
 
     delete: (base, opts)=>(...args)=>{
-      const {path} = resolveArgs(args, merge(opts, {base}));
-      return http.delete(path);
+      const {path, props:data} = resolveArgs(args, merge(opts, {base, props:args[0], convertFn:opts.data}));
+      return http.delete(path, data).then(successFn(opts));
     }
   }
 }

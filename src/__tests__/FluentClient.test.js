@@ -6,12 +6,7 @@ describe('FluentClient', ()=>{
   let api, http;
 
   beforeEach(()=>{
-    http = {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn()
-    }
+    http = require('../Http').default();
     api = require('../FluentClient').default({http});
   })
 
