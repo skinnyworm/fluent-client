@@ -69,9 +69,8 @@ export default function Http(opts={}){
         method: 'POST',
         headers: buildHeaders(contentTypeHeaders),
       }
-      if(!isEmpty(body)){
-        fetchOptions = merge(fetchOptions, {body});
-      }
+
+      fetchOptions = merge(fetchOptions, {body: body||{}});
       return fetch(buildUrl(path), fetchOptions).then(format.decode);
     },
 
@@ -81,9 +80,8 @@ export default function Http(opts={}){
         method: 'PUT',
         headers: buildHeaders(contentTypeHeaders),
       }
-      if(!isEmpty(body)){
-        fetchOptions = merge(fetchOptions, {body});
-      }
+      
+      fetchOptions = merge(fetchOptions, {body: body||{}});
       return fetch(buildUrl(path), fetchOptions).then(format.decode);
     },
 
@@ -94,10 +92,7 @@ export default function Http(opts={}){
         headers: buildHeaders(contentTypeHeaders),
       }
 
-      if(!isEmpty(body)){
-        fetchOptions = merge(fetchOptions, {body});
-      }
-
+      fetchOptions = merge(fetchOptions, {body: body||{}});
       return fetch(buildUrl(path), fetchOptions).then(format.decode);
     }
   }
