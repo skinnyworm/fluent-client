@@ -3,13 +3,9 @@ import isEmpty from 'lodash/isEmpty';
 
 export const jsonFormat = {
   encode: (data)=>{
-    if(data){
-      return {
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-      }
-    }else{
-      return {}
+    return {
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data || {})
     }
   },
 
