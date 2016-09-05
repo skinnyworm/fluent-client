@@ -3,8 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.headerBuilder = exports.urlBuilder = exports.jsonFormat = undefined;
-exports.default = Http;
 
 var _merge = require('lodash/merge');
 
@@ -16,33 +14,93 @@ var _isEmpty2 = _interopRequireDefault(_isEmpty);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var jsonFormat = exports.jsonFormat = {
-  encode: function encode(data) {
-    if (data) {
-      return {
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      };
-    } else {
-      return {};
-    }
-  },
+var defaultFetch = fetch;
 
-  decode: function decode(response) {
-    var contentType = response.headers.get('Content-Type');
-    var contentLength = response.headers.get('Content-Length');
-    return response.json().catch(function (err) {
-      return {};
-    }).then(function (json) {
-      if (!response.ok) {
-        return Promise.reject(json);
-      }
-      return json;
-    });
-  }
+var jsonEncode = function jsonEncode(data) {
+  return {
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data || {})
+  };
 };
 
-var urlBuilder = exports.urlBuilder = function urlBuilder(apiBase) {
+var jsonDecode = function jsonDecode(response) {
+  var contentType = response.headers.get('Content-Type');
+  var contentLength = response.headers.get('Content-Length');
+  return response.json().catch(function (err) {
+    return {};
+  }).then(function (json) {
+    if (!response.ok) {
+      return Promise.reject(json);
+    }
+    return json;
+  });
+};
+
+var Http = function Http() {
+  var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+
+  var url = opts.url || Http.urlBuilder('http://localhost');
+  var headers = opts.headers || Http.headerBuilder();
+  var encode = opts.encode || jsonEncode;
+  var decode = opts.decode || jsonDecode;
+  var fetch = opts.fetch || defaultFetch;
+
+  return {
+    get: function get(path) {
+      var params = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
+      return fetch(url(path, params), {
+        method: 'GET',
+        headers: headers()
+      }).then(decode);
+    },
+    post: function post(path, data) {
+      var _encode = encode(data);
+
+      var body = _encode.body;
+      var contentTypeHeaders = _encode.headers;
+
+      var fetchOptions = {
+        method: 'POST',
+        headers: headers(contentTypeHeaders)
+      };
+
+      fetchOptions = (0, _merge2.default)(fetchOptions, { body: body || {} });
+      return fetch(url(path), fetchOptions).then(decode);
+    },
+    put: function put(path, data) {
+      var _encode2 = encode(data);
+
+      var body = _encode2.body;
+      var contentTypeHeaders = _encode2.headers;
+
+      var fetchOptions = {
+        method: 'PUT',
+        headers: headers(contentTypeHeaders)
+      };
+
+      fetchOptions = (0, _merge2.default)(fetchOptions, { body: body || {} });
+      return fetch(url(path), fetchOptions).then(decode);
+    },
+    delete: function _delete(path, data) {
+      var _encode3 = encode(data);
+
+      var body = _encode3.body;
+      var contentTypeHeaders = _encode3.headers;
+
+      var fetchOptions = {
+        method: 'DELETE',
+        headers: headers(contentTypeHeaders)
+      };
+
+      fetchOptions = (0, _merge2.default)(fetchOptions);
+      return fetch(url(path), fetchOptions).then(decode);
+    }
+  };
+};
+
+Http.urlBuilder = function (apiBase) {
   var defaultParams = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
   return function buildUrl(path) {
@@ -65,7 +123,7 @@ var urlBuilder = exports.urlBuilder = function urlBuilder(apiBase) {
   };
 };
 
-var headerBuilder = exports.headerBuilder = function headerBuilder() {
+Http.headerBuilder = function () {
   var defaultHeaders = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
   return function buildHeaders() {
@@ -79,72 +137,4 @@ var headerBuilder = exports.headerBuilder = function headerBuilder() {
   };
 };
 
-function Http() {
-  var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-  var buildUrl = opts.url;
-  var buildHeaders = opts.headers;
-  var format = opts.format;
-
-
-  buildUrl = buildUrl || urlBuilder('http://localhost');
-  buildHeaders = buildHeaders || headerBuilder();
-  format = format || jsonFormat;
-
-  return {
-    get: function get(path) {
-      var params = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
-
-      return fetch(buildUrl(path, params), {
-        method: 'GET',
-        headers: buildHeaders()
-      }).then(format.decode);
-    },
-    post: function post(path, data) {
-      var _format$encode = format.encode(data);
-
-      var body = _format$encode.body;
-      var contentTypeHeaders = _format$encode.headers;
-
-      var fetchOptions = {
-        method: 'POST',
-        headers: buildHeaders(contentTypeHeaders)
-      };
-      if (!(0, _isEmpty2.default)(body)) {
-        fetchOptions = (0, _merge2.default)(fetchOptions, { body: body });
-      }
-      return fetch(buildUrl(path), fetchOptions).then(format.decode);
-    },
-    put: function put(path, data) {
-      var _format$encode2 = format.encode(data);
-
-      var body = _format$encode2.body;
-      var contentTypeHeaders = _format$encode2.headers;
-
-      var fetchOptions = {
-        method: 'PUT',
-        headers: buildHeaders(contentTypeHeaders)
-      };
-      if (!(0, _isEmpty2.default)(body)) {
-        fetchOptions = (0, _merge2.default)(fetchOptions, { body: body });
-      }
-      return fetch(buildUrl(path), fetchOptions).then(format.decode);
-    },
-    delete: function _delete(path, data) {
-      var _format$encode3 = format.encode(data);
-
-      var body = _format$encode3.body;
-      var contentTypeHeaders = _format$encode3.headers;
-
-      var fetchOptions = {
-        method: 'DELETE',
-        headers: buildHeaders(contentTypeHeaders)
-      };
-
-      if (!(0, _isEmpty2.default)(body)) {
-        fetchOptions = (0, _merge2.default)(fetchOptions, { body: body });
-      }
-
-      return fetch(buildUrl(path), fetchOptions).then(format.decode);
-    }
-  };
-}
+exports.default = Http;

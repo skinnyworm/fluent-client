@@ -27,8 +27,10 @@ describe('Http', ()=>{
 
   describe('urlBuilder', ()=>{
     let http;
+
     beforeEach(()=>{
-      http = Http({url: urlBuilder('http://example.com')});
+      const url = Http.urlBuilder('http://example.com');
+      http = Http({url});
     });
 
     it('build url with api base', ()=>{
@@ -44,14 +46,14 @@ describe('Http', ()=>{
     });
 
     it('can add default params to the url', ()=>{
-      http = Http({url: urlBuilder('http://example.com', {always:true})});
+      http = Http({url: Http.urlBuilder('http://example.com', {always:true})});
       http.get('/Users');
       const [url, options] = fetch.mock.calls[0];
       expect(url).toEqual('http://example.com/Users?always=true');
     });
 
     it('can add default params as a function', ()=>{
-      http = Http({url: urlBuilder('http://example.com', ()=>({access_token: '1234'}))});
+      http = Http({url: Http.urlBuilder('http://example.com', ()=>({access_token: '1234'}))});
       http.get('/Users');
       const [url, options] = fetch.mock.calls[0];
       expect(url).toEqual('http://example.com/Users?access_token=1234');
@@ -60,8 +62,11 @@ describe('Http', ()=>{
 
   describe('headerBuilder', ()=>{
     let http;
+
     beforeEach(()=>{
-      http = Http({url: urlBuilder('http://example.com'), headers: headerBuilder({sessionToken:'1234'})});
+      const url = Http.urlBuilder('http://example.com');
+      const headers = Http.headerBuilder({sessionToken:'1234'});
+      http = Http({url, headers});
     });
 
     it('add default headers to the request', ()=>{
@@ -79,7 +84,7 @@ describe('Http', ()=>{
     })
 
     it('default headers can be a function', ()=>{
-      http = Http({url: urlBuilder('http://example.com'), headers: headerBuilder(()=>({sessionToken:'1234'}))});
+      http = Http({url: Http.urlBuilder('http://example.com'), headers: Http.headerBuilder(()=>({sessionToken:'1234'}))});
 
       http.get('/Users');
       const [url, options] = fetch.mock.calls[0];
@@ -125,15 +130,15 @@ describe('Http', ()=>{
     });
   })
 
-  pit('handles POST/PUT request wihtout body', ()=>{
+  pit('handles POST/PUT request without body', ()=>{
     return Http().post('/test').then(result=>{
       expect(result).toBeDefined();
       const [url, options] = fetch.mock.calls[0];
       const {method, body, headers} = options;
 
       expect(method).toEqual('POST');
-      expect(body).not.toBeDefined();
-      expect(Object.keys(headers).length).toBe(0);
+      expect(body).toEqual(JSON.stringify({}));
+      expect(Object.keys(headers).length).toBe(1);
     })
 
   })
@@ -146,7 +151,7 @@ describe('Http', ()=>{
 
       expect(method).toEqual('DELETE');
       expect(body).not.toBeDefined();
-      expect(Object.keys(headers).length).toBe(0);
+      expect(Object.keys(headers).length).toBe(1);
     });
   })
 

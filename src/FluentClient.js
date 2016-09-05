@@ -63,8 +63,12 @@ function apiObject(opts={}){
 
 
 
-function buildConfig(initial){
-  let _config = initial;
+function buildConfig(template){
+  if(typeof(template) === 'function'){
+    template = template();
+  }
+
+  let _config = template;
 
   return{
     config: ()=>_config,
@@ -101,14 +105,16 @@ function buildConfig(initial){
 
 
 export default function FluentClient(opts={}){
-  const {url, headers, format} = opts;
-  const defaultOptions = {
-    http: opts.http || Http({url, headers, format}),
-    template: opts.template || RestfulModel
-  }
+  let {template, http, ...httpCfg} = opts;
+  http = http || Http(httpCfg);
 
   return function(opts, cfg){
-    let {template, ...apiOptions} = Object.assign({}, defaultOptions, opts)
+    let {template, ...apiOptions} = Object.assign({http, template}, opts)
+
+    if (!template){
+      throw "Must define an api template"
+    }
+
     if(!apiOptions.path){
       throw "Must have path when define an api end point."
     }

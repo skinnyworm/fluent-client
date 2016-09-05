@@ -1,27 +1,79 @@
 import merge from 'lodash/merge';
 import isEmpty from 'lodash/isEmpty';
 
-export const jsonFormat = {
-  encode: (data)=>{
-    return {
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data || {})
-    }
-  },
+const defaultFetch = fetch;
 
-  decode: (response)=>{
-    const contentType = response.headers.get('Content-Type');
-    const contentLength = response.headers.get('Content-Length');
-    return response.json().catch(err=>({})).then(json=>{
-      if (!response.ok) {
-        return Promise.reject(json)
-      }
-      return json;
-    })
+const jsonEncode = (data)=>{
+  return {
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data || {})
   }
 }
 
-export const urlBuilder = (apiBase, defaultParams={})=>{
+const jsonDecode = (response)=>{
+  const contentType = response.headers.get('Content-Type');
+  const contentLength = response.headers.get('Content-Length');
+  return response.json().catch(err=>({})).then(json=>{
+    if (!response.ok) {
+      return Promise.reject(json)
+    }
+    return json;
+  })
+}
+
+const Http = (opts={})=>{
+
+  const url = opts.url || Http.urlBuilder('http://localhost');
+  const headers = opts.headers || Http.headerBuilder();
+  const encode = opts.encode || jsonEncode;
+  const decode = opts.decode || jsonDecode;
+  const fetch = opts.fetch || defaultFetch;
+
+  return {
+    get(path, params=null){
+      return fetch(url(path, params),{
+        method: 'GET',
+        headers: headers(),
+      }).then(decode);
+    },
+
+    post(path, data){
+      const {body, headers:contentTypeHeaders} = encode(data);
+      let fetchOptions = {
+        method: 'POST',
+        headers: headers(contentTypeHeaders),
+      }
+
+      fetchOptions = merge(fetchOptions, {body: body||{}});
+      return fetch(url(path), fetchOptions).then(decode);
+    },
+
+    put(path, data){
+      const {body, headers:contentTypeHeaders} = encode(data);
+      let fetchOptions = {
+        method: 'PUT',
+        headers: headers(contentTypeHeaders),
+      }
+
+      fetchOptions = merge(fetchOptions, {body: body||{}});
+      return fetch(url(path), fetchOptions).then(decode);
+    },
+
+    delete(path, data){
+      const {body, headers:contentTypeHeaders} = encode(data);
+      let fetchOptions = {
+        method: 'DELETE',
+        headers: headers(contentTypeHeaders),
+      }
+
+      fetchOptions = merge(fetchOptions);
+      return fetch(url(path), fetchOptions).then(decode);
+    }
+  }
+}
+
+
+Http.urlBuilder = (apiBase, defaultParams={})=>{
   return function buildUrl(path, params={}){
     if(typeof(defaultParams) === 'function'){
       params = merge({}, params, defaultParams());
@@ -38,7 +90,7 @@ export const urlBuilder = (apiBase, defaultParams={})=>{
   }
 }
 
-export const headerBuilder = (defaultHeaders={})=>{
+Http.headerBuilder = (defaultHeaders={})=>{
   return function buildHeaders(headers={}){
     if(typeof(defaultHeaders) === 'function'){
       return merge({}, headers, defaultHeaders());
@@ -48,52 +100,4 @@ export const headerBuilder = (defaultHeaders={})=>{
   }
 }
 
-export default function Http(opts={}){
-  let {url: buildUrl, headers: buildHeaders, format} = opts;
-
-  buildUrl = buildUrl || urlBuilder('http://localhost');
-  buildHeaders = buildHeaders || headerBuilder();
-  format = format || jsonFormat;
-
-  return {
-    get(path, params=null){
-      return fetch(buildUrl(path, params),{
-        method: 'GET',
-        headers: buildHeaders(),
-      }).then(format.decode);
-    },
-
-    post(path, data){
-      const {body, headers:contentTypeHeaders} = format.encode(data);
-      let fetchOptions = {
-        method: 'POST',
-        headers: buildHeaders(contentTypeHeaders),
-      }
-
-      fetchOptions = merge(fetchOptions, {body: body||{}});
-      return fetch(buildUrl(path), fetchOptions).then(format.decode);
-    },
-
-    put(path, data){
-      const {body, headers:contentTypeHeaders} = format.encode(data);
-      let fetchOptions = {
-        method: 'PUT',
-        headers: buildHeaders(contentTypeHeaders),
-      }
-      
-      fetchOptions = merge(fetchOptions, {body: body||{}});
-      return fetch(buildUrl(path), fetchOptions).then(format.decode);
-    },
-
-    delete(path, data){
-      const {body, headers:contentTypeHeaders} = format.encode(data);
-      let fetchOptions = {
-        method: 'DELETE',
-        headers: buildHeaders(contentTypeHeaders),
-      }
-
-      fetchOptions = merge(fetchOptions, {body: body||{}});
-      return fetch(buildUrl(path), fetchOptions).then(format.decode);
-    }
-  }
-}
+export default Http;

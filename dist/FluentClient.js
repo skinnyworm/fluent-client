@@ -92,8 +92,12 @@ function apiObject() {
   return functionObject(path, config);
 }
 
-function buildConfig(initial) {
-  var _config = initial;
+function buildConfig(template) {
+  if (typeof template === 'function') {
+    template = template();
+  }
+
+  var _config = template;
 
   return {
     config: function config() {
@@ -136,21 +140,23 @@ function buildConfig(initial) {
 
 function FluentClient() {
   var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-  var url = opts.url;
-  var headers = opts.headers;
-  var format = opts.format;
+  var template = opts.template;
+  var http = opts.http;
 
-  var defaultOptions = {
-    http: opts.http || (0, _Http2.default)({ url: url, headers: headers, format: format }),
-    template: opts.template || _templates.RestfulModel
-  };
+  var httpCfg = _objectWithoutProperties(opts, ['template', 'http']);
+
+  http = http || (0, _Http2.default)(httpCfg);
 
   return function (opts, cfg) {
-    var _Object$assign = Object.assign({}, defaultOptions, opts);
+    var _Object$assign = Object.assign({ http: http, template: template }, opts);
 
     var template = _Object$assign.template;
 
     var apiOptions = _objectWithoutProperties(_Object$assign, ['template']);
+
+    if (!template) {
+      throw "Must define an api template";
+    }
 
     if (!apiOptions.path) {
       throw "Must have path when define an api end point.";

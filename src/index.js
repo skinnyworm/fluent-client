@@ -1,6 +1,7 @@
 const FluentClient = require('./FluentClient').default;
-const {default: Http, urlBuilder, headerBuilder} = require('./Http');
+const Http = require('./Http').default;
 const templates = require('./templates');
+
 module.exports = {
-  FluentClient, Http, urlBuilder, headerBuilder, templates
+  FluentClient, Http
 }
