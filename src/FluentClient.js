@@ -108,7 +108,7 @@ export default function FluentClient(opts={}){
   const {template:defaultTemplate, http:defaultHttp, ...httpCfg} = opts;
   const defaultOptions = {
     template: defaultTemplate,
-    http: defaultHttp || Http(httpCfg);
+    http: defaultHttp || Http(httpCfg)
   }
 
   return function(opts, cfg){
