@@ -105,11 +105,14 @@ function buildConfig(template){
 
 
 export default function FluentClient(opts={}){
-  let {template, http, ...httpCfg} = opts;
-  http = http || Http(httpCfg);
+  const {template:defaultTemplate, http:defaultHttp, ...httpCfg} = opts;
+  const defaultOptions = {
+    template: defaultTemplate,
+    http: defaultHttp || Http(httpCfg)
+  }
 
   return function(opts, cfg){
-    let {template, ...apiOptions} = Object.assign({http, template}, opts)
+    let {template, ...apiOptions} = Object.assign({}, defaultOptions, opts)
 
     if (!template){
       throw "Must define an api template"
