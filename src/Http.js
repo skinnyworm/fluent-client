@@ -1,8 +1,6 @@
 import merge from 'lodash/merge';
 import isEmpty from 'lodash/isEmpty';
 
-const defaultFetch = fetch;
-
 const jsonEncode = (data)=>{
   return {
     headers: {'Content-Type': 'application/json'},
@@ -27,6 +25,7 @@ const Http = (opts={})=>{
   const headers = opts.headers || Http.headerBuilder();
   const encode = opts.encode || jsonEncode;
   const decode = opts.decode || jsonDecode;
+  const defaultFetch = fetch;
   const fetch = opts.fetch || defaultFetch;
 
   return {
