@@ -1,20 +1,28 @@
-jest.unmock('../templates');
-jest.unmock('../buildMethod');
-jest.unmock('../FluentClient');
+jest.mock('../Http');
+
+const Http = ()=>{
+  return{
+    get: jest.fn(()=>Promise.resolve()),
+    post: jest.fn(()=>Promise.resolve()),
+    put: jest.fn(()=>Promise.resolve()),
+    delete: jest.fn(()=>Promise.resolve())
+  }
+}
 
 describe('FluentClient', ()=>{
-  let api, http;
+  let api, http, template;
 
   beforeEach(()=>{
-    http = require('../Http').default();
+    http = Http();
     api = require('../FluentClient').default({http});
+    template = require('../templates').RestfulModel;
   })
 
   describe('Default RestfulModel', ()=>{
     let MyApi;
 
     beforeEach(()=>{
-      MyApi = api({path:"/MyApi"});
+      MyApi = api({path:"/MyApi", template:()=>template});
     });
 
     it('can create', ()=>{
@@ -92,9 +100,9 @@ describe('FluentClient', ()=>{
     });
   });
 
-  describe('extend model', ()=>{
+  fdescribe('extend model', ()=>{
     it('can add collection methods', ()=>{
-      const MyApi = api({path:"/MyApi"}, api=>{
+      const MyApi = api({path:"/MyApi", template:()=>template}, api=>{
         api.collection({
           list:{
             verb: 'get',
@@ -109,11 +117,12 @@ describe('FluentClient', ()=>{
       MyApi.list();
       const [path, params] = http.get.mock.calls[0];
       expect(path).toEqual('/MyApi/list');
+
     });
 
 
     it('can add instance methods', ()=>{
-      const MyApi = api({path:"/MyApi"}, api=>{
+      const MyApi = api({path:"/MyApi", template:()=>template}, api=>{
         api.instance({
           join:{
             verb: 'post',
@@ -133,9 +142,9 @@ describe('FluentClient', ()=>{
     });
   });
 
-  describe('add relations', ()=>{
+  fdescribe('add relations', ()=>{
     it('can add one relation', ()=>{
-      const MyApi = api({path:"/MyApi"}, api=>{
+      const MyApi = api({path:"/MyApi", template:()=>template}, api=>{
         api.relation({type:'one', name:'owner'}, (rel)=>{
           rel.instance({
             get:{
@@ -148,6 +157,8 @@ describe('FluentClient', ()=>{
             }
           });
         });
+
+        // console.log(api.config())
       });
 
 
@@ -157,6 +168,7 @@ describe('FluentClient', ()=>{
 
       MyApi('123').owner.get()
       MyApi('123').owner.set("4567")
+      // console.log(http.get.mock.calls);
 
       let [getPath] = http.get.mock.calls[0];
       expect(getPath).toEqual('/MyApi/123/owner');
@@ -167,7 +179,7 @@ describe('FluentClient', ()=>{
     });
 
     it('can add many relation', ()=>{
-      const MyApi = api({path:"/MyApi"}, api=>{
+      const MyApi = api({path:"/MyApi", template:()=>template}, api=>{
         api.relation({type:'many', name:'items'}, (rel)=>{
           rel.collection({
             list:{

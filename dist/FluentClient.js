@@ -44,35 +44,6 @@ function apiObject() {
     }, {});
   };
 
-  var relationObject = function relationObject(path, relations) {
-    var one = relations.one;
-    var many = relations.many;
-
-    var relationObj = new Object();
-
-    if (many) {
-      Object.keys(many).reduce(function (memo, prop) {
-        var config = many[prop];
-        memo[prop] = functionObject(path + '/' + prop, config);
-        return memo;
-      }, relationObj);
-    }
-
-    if (one) {
-      Object.keys(one).reduce(function (memo, prop) {
-        var config = one[prop];
-        var relationPath = path + '/' + prop;
-        var remoteObj = remoteObject(relationPath, config.instance || {});
-        if (config.relations) {
-          remoteObj = Object.assign(remoteObj, relationObject(relationPath, config.relations));
-        }
-        memo[prop] = remoteObj;
-        return memo;
-      }, relationObj);
-    }
-    return relationObj;
-  };
-
   var functionObject = function functionObject(path, config) {
     var collection = config.collection;
     var instance = config.instance;
@@ -87,6 +58,35 @@ function apiObject() {
       return remoteObj;
     };
     return Object.assign(fn, remoteObject(path, collection));
+  };
+
+  var relationObject = function relationObject(path, relations) {
+    var one = relations.one;
+    var many = relations.many;
+
+    var relationObj = new Object();
+    var relationPath = path + '/' + prop;
+
+    if (many) {
+      Object.keys(many).reduce(function (memo, prop) {
+        var config = many[prop];
+        memo[prop] = functionObject(relationPath, config);
+        return memo;
+      }, relationObj);
+    }
+
+    if (one) {
+      Object.keys(one).reduce(function (memo, prop) {
+        var config = one[prop];
+        var remoteObj = remoteObject(relationPath, config.instance || {});
+        if (config.relations) {
+          remoteObj = Object.assign(remoteObj, relationObject(relationPath, config.relations));
+        }
+        memo[prop] = remoteObj;
+        return memo;
+      }, relationObj);
+    }
+    return relationObj;
   };
 
   return functionObject(path, config);
@@ -140,15 +140,18 @@ function buildConfig(template) {
 
 function FluentClient() {
   var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-  var template = opts.template;
-  var http = opts.http;
+  var defaultTemplate = opts.template;
+  var defaultHttp = opts.http;
 
   var httpCfg = _objectWithoutProperties(opts, ['template', 'http']);
 
-  http = http || (0, _Http2.default)(httpCfg);
+  var defaultOptions = {
+    template: defaultTemplate,
+    http: defaultHttp || (0, _Http2.default)(httpCfg)
+  };
 
   return function (opts, cfg) {
-    var _Object$assign = Object.assign({ http: http, template: template }, opts);
+    var _Object$assign = Object.assign({}, defaultOptions, opts);
 
     var template = _Object$assign.template;
 

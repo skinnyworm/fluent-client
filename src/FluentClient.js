@@ -18,14 +18,29 @@ function apiObject(opts={}){
     }, {});
   };
 
+  const functionObject = (path, config)=>{
+    const {collection, instance, relations} = config;
+    const fn = (id)=>{
+      const instancePath = `${path}/${id}`
+      let remoteObj = remoteObject(instancePath, instance);
+      if(relations){
+        remoteObj = Object.assign(remoteObj, relationObject(instancePath, relations));
+      }
+      return remoteObj;
+    }
+    return Object.assign(fn, remoteObject(path, collection));
+  };
+
   const relationObject = (path, relations)=>{
     const {one, many} = relations
     const relationObj = new Object();
 
+
     if(many){
       Object.keys(many).reduce((memo, prop)=>{
         let config = many[prop];
-        memo[prop] = functionObject(`${path}/${prop}`, config);
+        let relationPath = `${path}/${prop}`
+        memo[prop] = functionObject(relationPath, config);
         return memo;
       }, relationObj)
     }
@@ -43,19 +58,6 @@ function apiObject(opts={}){
       }, relationObj);
     }
     return relationObj;
-  };
-
-  const functionObject = (path, config)=>{
-    const {collection, instance, relations} = config;
-    const fn = (id)=>{
-      const instancePath = `${path}/${id}`
-      let remoteObj = remoteObject(instancePath, instance);
-      if(relations){
-        remoteObj = Object.assign(remoteObj, relationObject(instancePath, relations));
-      }
-      return remoteObj;
-    }
-    return Object.assign(fn, remoteObject(path, collection));
   };
 
   return functionObject(path, config);

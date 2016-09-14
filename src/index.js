@@ -3,5 +3,5 @@ const Http = require('./Http').default;
 const templates = require('./templates');
 
 module.exports = {
-  FluentClient, Http
+  FluentClient, Http, Url
 }

@@ -46,7 +46,7 @@ var remote = function remote(http) {
     var path = opts.path;
     var convertFn = opts.convertFn;
     var props = opts.props;
-
+    // base is a fn
 
     if (!argNames) {
       return { path: [base, path].join(''), props: props };

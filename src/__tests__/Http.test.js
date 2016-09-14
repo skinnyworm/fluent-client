@@ -1,7 +1,8 @@
 jest.unmock('../Http')
 import Http, {urlBuilder, headerBuilder, jsonFormat} from '../Http';
 
-describe('Http', ()=>{
+
+xdescribe('Http', ()=>{
   let fetch;
 
   beforeEach(()=>{

@@ -12,9 +12,11 @@ var _isEmpty = require('lodash/isEmpty');
 
 var _isEmpty2 = _interopRequireDefault(_isEmpty);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _isomorphicFetch = require('isomorphic-fetch');
 
-var defaultFetch = fetch;
+var _isomorphicFetch2 = _interopRequireDefault(_isomorphicFetch);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var jsonEncode = function jsonEncode(data) {
   return {
@@ -44,7 +46,7 @@ var Http = function Http() {
   var headers = opts.headers || Http.headerBuilder();
   var encode = opts.encode || jsonEncode;
   var decode = opts.decode || jsonDecode;
-  var fetch = opts.fetch || defaultFetch;
+  var fetch = opts.fetch || _isomorphicFetch2.default;
 
   return {
     get: function get(path) {
