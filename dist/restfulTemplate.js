@@ -1,7 +1,8 @@
-module.exports = {
+'use strict';
 
-  RestfulModel: {
-    collection:{
+module.exports = function () {
+  return {
+    collection: {
       create: {
         verb: 'post'
       },
@@ -23,7 +24,8 @@ module.exports = {
         path: '/count'
       }
     },
-    instance:{
+
+    instance: {
       get: {
         verb: 'get'
       },
@@ -36,6 +38,5 @@ module.exports = {
         verb: 'delete'
       }
     }
-  }
-
-}
+  };
+};

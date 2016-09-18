@@ -5,7 +5,10 @@ const remote = (http)=>{
 
   const namedArgs = (argNames, args)=>{
     return argNames.reduce((memo, name, i)=>{
-      memo[name] = args[i];
+      const arg = args[i];
+      if(arg){
+        memo[name] = arg;
+      }
       return memo;
     },{});
   }
@@ -25,10 +28,10 @@ const remote = (http)=>{
   }
 
   const resolveArgs = (args, opts)=>{
-    var {args:argNames, base, path, convertFn, props} =  opts;
+    var {args:argNames, location, path, convertFn, props} =  opts;
 
     if(!argNames){
-      return {path:[base, path].join(''), props}
+      return {path:[location, path].join(''), props}
     }else{
       props = namedArgs(argNames, args);
 
@@ -47,7 +50,7 @@ const remote = (http)=>{
         props = undefined;
       }
 
-      return {path:[base, path].join(''), props};
+      return {path:[location, path].join(''), props};
     }
   }
 
@@ -55,33 +58,33 @@ const remote = (http)=>{
     return !!success ? success : (result)=>result;
   }
 
-
   return{
-    get: (base, opts)=>(...args)=>{
-      const {path, props:params} = resolveArgs(args, merge(opts, {base, props:null, convertFn:opts.params}));
+    get: (location, opts)=> (...args)=>{
+      const {path, props:params} = resolveArgs(args, merge({location, props:undefined, convertFn:opts.params},opts));
       return http.get(path, params).then(successFn(opts));
     },
 
-    post: (base, opts)=>(...args)=>{
-      const {path, props:data} = resolveArgs(args, merge(opts, {base, props:args[0], convertFn:opts.data}));
+    delete: (location, opts)=> (...args)=>{
+      const {path, props:data} = resolveArgs(args, merge({location, props:undefined, convertFn:opts.params}, opts));
+      return http.delete(path, data).then(successFn(opts));
+    },
+
+    post: (location, opts)=> (...args)=>{
+      const {path, props:data} = resolveArgs(args, merge({location, props:args[0], convertFn:opts.data}, opts));
       return http.post(path, data).then(successFn(opts));
     },
 
-    put: (base, opts)=>(...args)=>{
-      const {path, props:data} = resolveArgs(args, merge(opts, {base, props:args[0], convertFn:opts.data}));
+    put: (location, opts)=> (...args)=>{
+      const {path, props:data} = resolveArgs(args, merge({location, props:args[0], convertFn:opts.data}, opts));
       return http.put(path, data).then(successFn(opts));
     },
-
-    delete: (base, opts)=>(...args)=>{
-      const {path, props:data} = resolveArgs(args, merge(opts, {base, props:args[0], convertFn:opts.data}));
-      return http.delete(path, data).then(successFn(opts));
-    }
   }
 }
 
-
-export default function buildMethod(uri, http, config){
+const buildMethod = (uri, http, config)=>{
   const {verb, ...opts} = config;
   const method = remote(http)[verb];
   return method(uri, opts);
 }
+
+module.exports = buildMethod;

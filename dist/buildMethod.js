@@ -1,10 +1,5 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = buildMethod;
-
 var _merge = require('lodash/merge');
 
 var _merge2 = _interopRequireDefault(_merge);
@@ -21,7 +16,10 @@ var remote = function remote(http) {
 
   var namedArgs = function namedArgs(argNames, args) {
     return argNames.reduce(function (memo, name, i) {
-      memo[name] = args[i];
+      var arg = args[i];
+      if (arg) {
+        memo[name] = arg;
+      }
       return memo;
     }, {});
   };
@@ -42,14 +40,14 @@ var remote = function remote(http) {
 
   var resolveArgs = function resolveArgs(args, opts) {
     var argNames = opts.args;
-    var base = opts.base;
+    var location = opts.location;
     var path = opts.path;
     var convertFn = opts.convertFn;
     var props = opts.props;
-    // base is a fn
+
 
     if (!argNames) {
-      return { path: [base, path].join(''), props: props };
+      return { path: [location, path].join(''), props: props };
     } else {
       props = namedArgs(argNames, args);
 
@@ -71,7 +69,7 @@ var remote = function remote(http) {
         props = undefined;
       }
 
-      return { path: [base, path].join(''), props: props };
+      return { path: [location, path].join(''), props: props };
     }
   };
 
@@ -84,13 +82,13 @@ var remote = function remote(http) {
   };
 
   return {
-    get: function get(base, opts) {
+    get: function get(location, opts) {
       return function () {
         for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
           args[_key] = arguments[_key];
         }
 
-        var _resolveArgs = resolveArgs(args, (0, _merge2.default)(opts, { base: base, props: null, convertFn: opts.params }));
+        var _resolveArgs = resolveArgs(args, (0, _merge2.default)({ location: location, props: undefined, convertFn: opts.params }, opts));
 
         var path = _resolveArgs.path;
         var params = _resolveArgs.props;
@@ -99,58 +97,60 @@ var remote = function remote(http) {
       };
     },
 
-    post: function post(base, opts) {
+    delete: function _delete(location, opts) {
       return function () {
         for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
           args[_key2] = arguments[_key2];
         }
 
-        var _resolveArgs2 = resolveArgs(args, (0, _merge2.default)(opts, { base: base, props: args[0], convertFn: opts.data }));
+        var _resolveArgs2 = resolveArgs(args, (0, _merge2.default)({ location: location, props: undefined, convertFn: opts.params }, opts));
 
         var path = _resolveArgs2.path;
         var data = _resolveArgs2.props;
 
-        return http.post(path, data).then(successFn(opts));
+        return http.delete(path, data).then(successFn(opts));
       };
     },
 
-    put: function put(base, opts) {
+    post: function post(location, opts) {
       return function () {
         for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
           args[_key3] = arguments[_key3];
         }
 
-        var _resolveArgs3 = resolveArgs(args, (0, _merge2.default)(opts, { base: base, props: args[0], convertFn: opts.data }));
+        var _resolveArgs3 = resolveArgs(args, (0, _merge2.default)({ location: location, props: args[0], convertFn: opts.data }, opts));
 
         var path = _resolveArgs3.path;
         var data = _resolveArgs3.props;
 
-        return http.put(path, data).then(successFn(opts));
+        return http.post(path, data).then(successFn(opts));
       };
     },
 
-    delete: function _delete(base, opts) {
+    put: function put(location, opts) {
       return function () {
         for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
           args[_key4] = arguments[_key4];
         }
 
-        var _resolveArgs4 = resolveArgs(args, (0, _merge2.default)(opts, { base: base, props: args[0], convertFn: opts.data }));
+        var _resolveArgs4 = resolveArgs(args, (0, _merge2.default)({ location: location, props: args[0], convertFn: opts.data }, opts));
 
         var path = _resolveArgs4.path;
         var data = _resolveArgs4.props;
 
-        return http.delete(path, data).then(successFn(opts));
+        return http.put(path, data).then(successFn(opts));
       };
     }
   };
 };
 
-function buildMethod(uri, http, config) {
+var buildMethod = function buildMethod(uri, http, config) {
   var verb = config.verb;
 
   var opts = _objectWithoutProperties(config, ['verb']);
 
   var method = remote(http)[verb];
   return method(uri, opts);
-}
+};
+
+module.exports = buildMethod;

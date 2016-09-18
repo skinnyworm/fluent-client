@@ -1,11 +1,11 @@
-jest.unmock('../buildMethod');
+const MockHttp = require('../__mocks__/MockHttp');
+const buildMethod = require('../buildMethod');
 
 describe('buildMethod', ()=>{
-  let buildMethod, http
+  let http;
 
   beforeEach(()=>{
-    http = require('../Http').default();
-    buildMethod = require('../buildMethod').default;
+    http = MockHttp();
   });
 
 
@@ -16,10 +16,8 @@ describe('buildMethod', ()=>{
       });
 
       get();
-      const {calls} = http.get.mock;
-      const [path] = calls[0];
-      expect(calls.length).toEqual(1);
-      expect(path).toEqual('/MyApi');
+
+      expect(http.argsOf('get')).toEqual(['/MyApi', undefined]);
     });
 
     it("calls http get with path", ()=>{
@@ -29,8 +27,8 @@ describe('buildMethod', ()=>{
       });
 
       get();
-      const [path] = http.get.mock.calls[0];
-      expect(path).toEqual('/MyApi/list');
+
+      expect(http.argsOf('get')).toEqual(['/MyApi/list', undefined]);
     });
 
     it("can convert arguments to path element given argument names are defined", ()=>{
@@ -41,9 +39,8 @@ describe('buildMethod', ()=>{
       });
 
       get(1234);
-      const [path, params] = http.get.mock.calls[0];
-      expect(path).toEqual('/MyApi/1234/list');
-      expect(params).not.toBeDefined();
+
+      expect(http.argsOf('get')).toEqual(['/MyApi/1234/list', undefined]);
     });
 
     it('can convert arguments to get params given argument names is defined', ()=>{
@@ -53,8 +50,8 @@ describe('buildMethod', ()=>{
       });
 
       get("test", "that");
-      const [path, args] = http.get.mock.calls[0];
-      expect(args).toEqual({param1:'test', param2:'that'});
+
+      expect(http.argsOf('get')).toEqual(['/MyApi', {param1:'test', param2:'that'}]);
     });
 
     it('can convert arguments to get params with customize function', ()=>{
@@ -65,8 +62,8 @@ describe('buildMethod', ()=>{
       });
 
       get("test", "that");
-      const [path, args] = http.get.mock.calls[0];
-      expect(args).toEqual({combined:'test:that'});
+
+      expect(http.argsOf('get')).toEqual(['/MyApi', {combined:'test:that'}]);
     });
 
     it('can invoke success handler once request is done successfully', ()=>{
@@ -93,13 +90,10 @@ describe('buildMethod', ()=>{
 
       post({name:'test'});
 
-      const {calls} = http.post.mock;
-      const [path] = calls[0];
-      expect(calls.length).toEqual(1);
-      expect(path).toEqual('/MyApi');
+      expect(http.argsOf('post')).toEqual(['/MyApi', {name:'test'}]);
     });
 
-    it("call http post with path", ()=>{
+    it("call http post with path and data", ()=>{
       const post = buildMethod('/MyApi', http, {
         verb: 'post',
         path: '/create'
@@ -107,21 +101,7 @@ describe('buildMethod', ()=>{
 
       post({name:'test'});
 
-      const [path] = http.post.mock.calls[0];
-      expect(path).toEqual('/MyApi/create');
-    });
-
-    it("call http post with first argument", ()=>{
-      const post = buildMethod('/MyApi', http, {
-        verb: 'post',
-        path: '/create'
-      });
-
-      post({name:'test'});
-
-      const [path, data] = http.post.mock.calls[0];
-      expect(path).toEqual('/MyApi/create');
-      expect(data).toEqual({name:'test'});
+      expect(http.argsOf('post')).toEqual(['/MyApi/create', {name:'test'}]);
     });
 
     it("can convert arguments to post data given argument names is defined",()=>{
@@ -132,8 +112,7 @@ describe('buildMethod', ()=>{
 
       post("Smith", 17);
 
-      const [path, data] = http.post.mock.calls[0];
-      expect(data).toEqual({name: 'Smith', age: 17});
+      expect(http.argsOf('post')).toEqual(['/MyApi', {name: 'Smith', age: 17}]);
     });
 
 
@@ -146,8 +125,7 @@ describe('buildMethod', ()=>{
 
       post("Smith", 17);
 
-      const [path, data] = http.post.mock.calls[0];
-      expect(data).toEqual({combied: 'Smith:17'});
+      expect(http.argsOf('post')).toEqual(['/MyApi', {combied: 'Smith:17'}]);
     });
 
   });
@@ -159,10 +137,8 @@ describe('buildMethod', ()=>{
       });
 
       put({});
-      const {calls} = http.put.mock;
-      const [path] = calls[0];
-      expect(calls.length).toEqual(1);
-      expect(path).toEqual('/MyApi');
+
+      expect(http.argsOf('put')).toEqual(['/MyApi', {}]);
     });
   });
 
@@ -173,10 +149,8 @@ describe('buildMethod', ()=>{
       });
 
       destroy();
-      const {calls} = http.delete.mock;
-      const [path] = calls[0];
-      expect(calls.length).toEqual(1);
-      expect(path).toEqual('/MyApi');
+      
+      expect(http.argsOf('delete')).toEqual(['/MyApi', undefined]);
     });
   });
 

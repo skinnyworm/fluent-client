@@ -1,6 +1,6 @@
 {
   "name": "fluent-client",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Build fluent api client",
   "main": "dist/index.js",
   "repository": {
@@ -24,8 +24,7 @@
   "author": "Alex Hu <askinnyworm@gmail.com> (https://github.com/skinnyworm)",
   "license": "ISC",
   "dependencies": {
-    "lodash": "^4.13.1",
-    "isomorphic-fetch": "^2.2.1"
+    "lodash": "^4.13.1"
   },
   "devDependencies": {
     "babel": "^6.5.2",
@@ -38,12 +37,6 @@
   },
   "jest": {
     "scriptPreprocessor": "<rootDir>/node_modules/babel-jest",
-    "unmockedModulePathPatterns": [
-      "<rootDir>/node_modules/lodash"
-    ],
-    "preprocessorIgnorePatterns":[
-      "/node_modules/"
-    ],
     "testPathIgnorePatterns": [
       "node_modules"
     ]

@@ -25,7 +25,15 @@ const jsonEncode = (data)=>{
  * @param decode - A function to decode response body to object
  * @param init - A function to resolve init options for fetch request
  */
-function Http({fetch, url, encode, decode, init}){
+const Http = ({fetch, url, encode, decode, init})=>{
+  if(!fetch){
+    throw 'Must provide a fetch implementation when create http'
+  }
+
+  if(!url){
+    throw 'Must provide a url with endpoint when create http'
+  }
+
   encode = encode || jsonEncode;
   decode = decode || jsonDecode;
 

@@ -1,8 +1,7 @@
 const isEmpty = require('lodash/isEmpty');
 const defaultUrlBuilder = (params)=>Promise.resolve(params);
 
-
-module.exports = function Url(apiBase, paramsBuilder){
+const Url = (apiBase, paramsBuilder)=>{
   paramsBuilder = paramsBuilder || defaultUrlBuilder;
 
   return (path, params)=>{
@@ -17,3 +16,5 @@ module.exports = function Url(apiBase, paramsBuilder){
     });
   }
 }
+
+module.exports = Url;

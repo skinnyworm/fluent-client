@@ -1,159 +1,71 @@
-jest.unmock('../Http')
-import Http, {urlBuilder, headerBuilder, jsonFormat} from '../Http';
+const MockFetch = require('../__mocks__/MockFetch');
+const Http = require('../Http');
+const Url = require('../Url');
 
-
-xdescribe('Http', ()=>{
-  let fetch;
+describe('Http', ()=>{
+  let http, url, fetch;
 
   beforeEach(()=>{
-    fetch = jest.fn();
-    global.fetch = fetch;
-    fetch.mockReturnValue(Promise.resolve({
-      headers:{
-        get(key){
-          return {
-            'Content-Type': 'application/json',
-            'Content-Length': 160,
-          }[key];
-        }
-      },
-      ok: true,
-      json: ()=>Promise.resolve({result: "data"})
-    }));
-  })
-
-  afterEach(()=>{
-    delete global.fetch
-  })
-
-  describe('urlBuilder', ()=>{
-    let http;
-
-    beforeEach(()=>{
-      const url = Http.urlBuilder('http://example.com');
-      http = Http({url});
-    });
-
-    it('build url with api base', ()=>{
-      http.get('/Users');
-      const [url, options] = fetch.mock.calls[0];
-      expect(url).toEqual('http://example.com/Users');
-    });
-
-    it('build url with encoded params', ()=>{
-      http.get('/Users',{id:1234});
-      const [url, options] = fetch.mock.calls[0];
-      expect(url).toEqual('http://example.com/Users?id=1234');
-    });
-
-    it('can add default params to the url', ()=>{
-      http = Http({url: Http.urlBuilder('http://example.com', {always:true})});
-      http.get('/Users');
-      const [url, options] = fetch.mock.calls[0];
-      expect(url).toEqual('http://example.com/Users?always=true');
-    });
-
-    it('can add default params as a function', ()=>{
-      http = Http({url: Http.urlBuilder('http://example.com', ()=>({access_token: '1234'}))});
-      http.get('/Users');
-      const [url, options] = fetch.mock.calls[0];
-      expect(url).toEqual('http://example.com/Users?access_token=1234');
-    });
+    fetch = MockFetch({ok:true});
+    url = Url('http://example.com');
+    http = Http({fetch, url});
   });
 
-  describe('headerBuilder', ()=>{
-    let http;
+  it("has 'get', 'delete', 'post' and 'put' methods", ()=>{
+    expect(http.get).toBeDefined();
+    expect(http.delete).toBeDefined();
+    expect(http.post).toBeDefined();
+    expect(http.put).toBeDefined();
+  });
 
-    beforeEach(()=>{
-      const url = Http.urlBuilder('http://example.com');
-      const headers = Http.headerBuilder({sessionToken:'1234'});
-      http = Http({url, headers});
-    });
+  pit('resolve url before fetch', async ()=>{
+    await http.get('/users');
 
-    it('add default headers to the request', ()=>{
-      http.get('/Users');
-      const [url, options] = fetch.mock.calls[0];
-      const {headers} = options;
-      expect(headers).toEqual({sessionToken:'1234'});
-    });
+    const [fetchUrl, fetchData] = fetch.mock.calls[0];
+    expect(fetchUrl).toEqual('http://example.com/users');
+  })
 
-    it('merge request headers with default headers', ()=>{
-      http.post('/Users', {name: 'people'});
-      const [url, options] = fetch.mock.calls[0];
-      const {headers} = options;
-      expect(headers).toEqual({sessionToken:'1234', 'Content-Type':'application/json'});
-    })
+  pit('resolve fetch config before fecth', async ()=>{
+    const init = jest.fn(()=>Promise.resolve({
+      headers:{
+        'x-extra': 'extra header'
+      }
+    }));
+    http = Http({fetch, url, init});
 
-    it('default headers can be a function', ()=>{
-      http = Http({url: Http.urlBuilder('http://example.com'), headers: Http.headerBuilder(()=>({sessionToken:'1234'}))});
+    await http.get('/users');
 
-      http.get('/Users');
-      const [url, options] = fetch.mock.calls[0];
-      const {headers} = options;
-      expect(headers).toEqual({sessionToken:'1234'});
+    expect(init.mock.calls.length).toEqual(1);
+    const [fetchUrl, fetchData] = fetch.mock.calls[0];
+    expect(fetchData).toEqual({
+      method: 'GET',
+      headers: {
+        'x-extra': 'extra header'
+      }
     });
   })
 
+  pit('encode request body by using default json encoder when put and post', async ()=>{
+    const data = {username:'username', password:'password'}
+    await http.post('/user/login', data);
 
-  pit('handles GET request', ()=>{
-    return Http().get('/test').then(result=>{
-      expect(result).toBeDefined();
-      const [url, options] = fetch.mock.calls[0];
-      const {method, body, headers} = options;
+    const [fetchUrl, fetchData] = fetch.mock.calls[0];
 
-      expect(method).toEqual('GET');
-      // expect(body).not.toBeDefined();
-      expect(Object.keys(headers).length).toBe(0);
+    expect(fetchUrl).toEqual('http://example.com/user/login');
+    expect(fetchData).toEqual({
+      method: 'POST',
+      headers:{
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
     });
-  })
-
-  pit('handles PUT request with body', ()=>{
-    return Http().put('/test',{data: 1}).then(result=>{
-      expect(result).toBeDefined();
-      const [url, options] = fetch.mock.calls[0];
-      const {method, body, headers} = options;
-
-      expect(method).toEqual('PUT');
-      expect(body).toBeDefined();
-      expect(headers).toEqual({'Content-Type':'application/json'})
-    });
-  })
-
-  pit('handles POST request with body', ()=>{
-    return Http().post('/test', {data:1}).then(result=>{
-      expect(result).toBeDefined();
-      const [url, options] = fetch.mock.calls[0];
-      const {method, body, headers} = options;
-
-      expect(method).toEqual('POST');
-      expect(body).toBeDefined();
-      expect(headers).toEqual({'Content-Type':'application/json'})
-    });
-  })
-
-  pit('handles POST/PUT request without body', ()=>{
-    return Http().post('/test').then(result=>{
-      expect(result).toBeDefined();
-      const [url, options] = fetch.mock.calls[0];
-      const {method, body, headers} = options;
-
-      expect(method).toEqual('POST');
-      expect(body).toEqual(JSON.stringify({}));
-      expect(Object.keys(headers).length).toBe(1);
-    })
 
   })
 
-  pit('handles DELETE request', ()=>{
-    return Http().delete('/test/123').then(result=>{
-      expect(result).toBeDefined();
-      const [url, options] = fetch.mock.calls[0];
-      const {method, body, headers} = options;
+  pit('decode response body by using default json decoder', async ()=>{
+    fetch.data({name:'Tom'});
+    const result = await http.get('/user');
 
-      expect(method).toEqual('DELETE');
-      expect(body).not.toBeDefined();
-      expect(Object.keys(headers).length).toBe(1);
-    });
+    expect(result).toEqual({name:'Tom'});
   })
-
-})
+});
