@@ -7,6 +7,7 @@ const FluentClient = (opts = {})=>{
   let {template:_template, http:_http, ...httpCfg} = opts;
   const http = _http || Http(httpCfg)
   const api = {http}
+  
   const define = (name, {location, template}, reduceFn)=>{
     let initial = template || _template;
     if (!initial){

@@ -60,12 +60,12 @@ const remote = (http)=>{
 
   return{
     get: (location, opts)=> (...args)=>{
-      const {path, props:params} = resolveArgs(args, merge({location, props:undefined, convertFn:opts.params},opts));
+      const {path, props:params} = resolveArgs(args, merge({location, props:args[0], convertFn:opts.params},opts));
       return http.get(path, params).then(successFn(opts));
     },
 
     delete: (location, opts)=> (...args)=>{
-      const {path, props:data} = resolveArgs(args, merge({location, props:undefined, convertFn:opts.params}, opts));
+      const {path, props:data} = resolveArgs(args, merge({location, props:args[0], convertFn:opts.params}, opts));
       return http.delete(path, data).then(successFn(opts));
     },
 
@@ -83,7 +83,11 @@ const remote = (http)=>{
 
 const buildMethod = (uri, http, config)=>{
   const {verb, ...opts} = config;
+
   const method = remote(http)[verb];
+  if(!method){
+    throw `Can not build method of verb: ${verb}`;
+  }
   return method(uri, opts);
 }
 

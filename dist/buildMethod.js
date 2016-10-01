@@ -150,6 +150,9 @@ var buildMethod = function buildMethod(uri, http, config) {
   var opts = _objectWithoutProperties(config, ['verb']);
 
   var method = remote(http)[verb];
+  if (!method) {
+    throw 'Can not build method of verb: ' + verb;
+  }
   return method(uri, opts);
 };
 

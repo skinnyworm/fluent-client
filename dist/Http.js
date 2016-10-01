@@ -35,6 +35,14 @@ var Http = function Http(_ref) {
   var decode = _ref.decode;
   var init = _ref.init;
 
+  if (!fetch) {
+    throw 'Must provide a fetch implementation when create http';
+  }
+
+  if (!url) {
+    throw 'Must provide a url with endpoint when create http';
+  }
+
   encode = encode || jsonEncode;
   decode = decode || jsonDecode;
 

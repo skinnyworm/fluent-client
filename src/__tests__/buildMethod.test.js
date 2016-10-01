@@ -149,7 +149,7 @@ describe('buildMethod', ()=>{
       });
 
       destroy();
-      
+
       expect(http.argsOf('delete')).toEqual(['/MyApi', undefined]);
     });
   });

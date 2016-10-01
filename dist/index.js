@@ -7,17 +7,18 @@ var Http = require('./Http');
 var Url = require('./Url');
 var Api = require('./Api');
 
-var FluentClient = function FluentClient(_ref) {
-  var _template = _ref.template;
-  var _http = _ref.http;
+var FluentClient = function FluentClient() {
+  var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var _template = opts.template;
+  var _http = opts.http;
 
-  var httpCfg = _objectWithoutProperties(_ref, ['template', 'http']);
+  var httpCfg = _objectWithoutProperties(opts, ['template', 'http']);
 
   var http = _http || Http(httpCfg);
   var api = { http: http };
-  var define = function define(name, _ref2, reduceFn) {
-    var location = _ref2.location;
-    var template = _ref2.template;
+  var define = function define(name, _ref, reduceFn) {
+    var location = _ref.location;
+    var template = _ref.template;
 
     var initial = template || _template;
     if (!initial) {
