@@ -1,4 +1,6 @@
 const buildMethod = require('./buildMethod');
+const merge = require('lodash/merge');
+const isEmpty = require('lodash/isEmpty');
 
 
 const Api = ({location, template:resourceTemplate, http})=>{
@@ -9,7 +11,15 @@ const Api = ({location, template:resourceTemplate, http})=>{
     const {collection, instance, relations} = template;
     const remote = remoteObject(location, collection)
     const fn = (id)=>{
-      const instanceLocation = `${location}/${id}`
+
+      let instanceLocation
+      if(!isEmpty(location.relations)){
+        const relation = location.relations[location.relations.length - 1];
+        instanceLocation = merge({[`${relation}Id`]: id}, location);
+      }else{
+        instanceLocation = merge({id: id}, location)
+      }
+
       let remoteObj = remoteObject(instanceLocation, instance);
       if(relations){
         remoteObj = Object.assign(remoteObj, relationObject(instanceLocation, relations));
@@ -33,7 +43,7 @@ const Api = ({location, template:resourceTemplate, http})=>{
       if(typeof(method) === 'function'){
         remote[prop] = method(location, http);
       }else{
-        remote[prop] = buildMethod(location, http, method);
+        remote[prop] = buildMethod(location, http, merge({restPath: !!resourceTemplate.restPath}, method));
       }
       return remote;
     }, {});
@@ -49,7 +59,7 @@ const Api = ({location, template:resourceTemplate, http})=>{
     if(many){
       Object.keys(many).reduce((memo, relationName)=>{
         let template = many[relationName];
-        let relationLocation = `${location}/${relationName}`;
+        let relationLocation = merge({relations: [...location.relations||[], relationName]}, location);
 
         memo[relationName] = functionObject(relationLocation, template);
         return memo;
@@ -59,7 +69,7 @@ const Api = ({location, template:resourceTemplate, http})=>{
     if(one){
       Object.keys(one).reduce((memo, relationName)=>{
         let template = one[relationName];
-        let relationLocation = `${location}/${relationName}`;
+        let relationLocation = merge({relations: [...location.relations||[], relationName]}, location);
 
         let remoteObj = remoteObject(relationLocation, template.instance || {});
         if(template.relations){
@@ -72,12 +82,7 @@ const Api = ({location, template:resourceTemplate, http})=>{
     return relationObj;
   };
 
-  // return (pathStr, template)=>{
-  //   const path = UrlPath(pathStr);
-  //   return functionObject(path, template);
-  // }
-
-  return functionObject(location, resourceTemplate)
+  return functionObject({location}, resourceTemplate)
 }
 
 module.exports = Api;

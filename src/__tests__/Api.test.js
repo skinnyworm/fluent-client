@@ -21,14 +21,14 @@ describe('Api', ()=>{
     expect(User(1).get).toBeDefined();
 
     await User(1).get();
-    expect(http.argsOf('get')).toEqual(['/user/1', undefined]);
+    expect(http.argsOf('get')).toEqual(['/user/1', {}]);
   });
 
   pit("build instance method of one relation such as 'User(1).profile.get()'", async ()=>{
     expect(User(1).profile.get).toBeDefined();
 
     await User(1).profile.get();
-    expect(http.argsOf('get')).toEqual(['/user/1/profile', undefined]);
+    expect(http.argsOf('get')).toEqual(['/user/1/profile', {}]);
   });
 
   pit("build collection method of many relation such as 'User(1).projects.create()'", async ()=>{
@@ -43,13 +43,15 @@ describe('Api', ()=>{
     expect(User(1).projects(2).get).toBeDefined();
 
     await User(1).projects(2).get();
-    expect(http.argsOf('get')).toEqual(['/user/1/projects/2', undefined]);
+    expect(http.argsOf('get')).toEqual(['/user/1/projects/2', {}]);
   });
 
 });
 
 
 const template = {
+  restPath: true,
+  
   // Build collection method such as User.create(data)
   collection:{
     create:{
@@ -72,7 +74,7 @@ const template = {
         // Build one releation method such as User(1).profile.get()
         instance:{
           get:{
-            verb: 'get'
+            verb: 'get',
           }
         }
       }

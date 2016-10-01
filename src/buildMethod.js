@@ -27,31 +27,46 @@ const remote = (http)=>{
     return {path, props}
   }
 
-  const resolveArgs = (args, opts)=>{
-    var {args:argNames, location, path, convertFn, props} =  opts;
-
-    if(!argNames){
-      return {path:[location, path].join(''), props}
-    }else{
-      props = namedArgs(argNames, args);
-
-      /** need to evaluate path components*/
-      if(path && path.match(/\/:[^\/]*/)){
-        var {props, path} = evalPath(path, props);
+  const toPath = ({location, relations, path, restPath, props})=>{
+    let pathComponents = [location];
+    if(restPath){
+      if(props.id){
+        pathComponents = [...pathComponents, "/:id"];
       }
 
-      /** need to convert props with customize function*/
-      if(convertFn){
-        props = convertFn(props)
+      if(relations){
+        const relationComponents = relations.map(relation=>{
+          const idKey = `${relation}Id`
+          return props[idKey] ? `/${relation}/:${idKey}`:`/${relation}`
+        });
+        pathComponents = [...pathComponents, ...relationComponents]
       }
-
-      /** FIXME:: Make empty object as undefined props? **/
-      if(isEmpty(props)){
-        props = undefined;
-      }
-
-      return {path:[location, path].join(''), props};
     }
+    if(path){
+      pathComponents = [...pathComponents, path];
+    }
+
+    return evalPath(pathComponents.join(''), props);
+  }
+
+  const resolveArgs = (args, opts)=>{
+    let {args:argNames, location:loc, path, convertFn, props, restPath} =  opts;
+    const {location, relations, ...ids} = loc;
+
+    // named arguments
+    if(argNames){
+      props = namedArgs(argNames, args);
+    }
+
+    // merge location ids with props
+    props = merge({}, props, ids);
+
+    // need to convert props with customize function
+    if(convertFn){
+      props = convertFn(props)
+    }
+
+    return toPath({location, relations, path, props, restPath});
   }
 
   const successFn = ({success})=>{

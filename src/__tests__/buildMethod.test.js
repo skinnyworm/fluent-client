@@ -11,28 +11,28 @@ describe('buildMethod', ()=>{
 
   describe("build get method", ()=>{
     it("calls http get", ()=>{
-      const get = buildMethod('/MyApi', http, {
+      const get = buildMethod({location:'/MyApi'}, http, {
         verb: 'get'
       });
 
       get();
 
-      expect(http.argsOf('get')).toEqual(['/MyApi', undefined]);
+      expect(http.argsOf('get')).toEqual(['/MyApi', {}]);
     });
 
     it("calls http get with path", ()=>{
-      const get = buildMethod('/MyApi', http, {
+      const get = buildMethod({location:'/MyApi'}, http, {
         verb: 'get',
         path: '/list'
       });
 
       get();
 
-      expect(http.argsOf('get')).toEqual(['/MyApi/list', undefined]);
+      expect(http.argsOf('get')).toEqual(['/MyApi/list', {}]);
     });
 
     it("can convert arguments to path element given argument names are defined", ()=>{
-      const get = buildMethod('/MyApi', http, {
+      const get = buildMethod({location:'/MyApi'}, http, {
         verb: 'get',
         path: '/:id/list',
         args: ["id"]
@@ -40,11 +40,11 @@ describe('buildMethod', ()=>{
 
       get(1234);
 
-      expect(http.argsOf('get')).toEqual(['/MyApi/1234/list', undefined]);
+      expect(http.argsOf('get')).toEqual(['/MyApi/1234/list', {}]);
     });
 
     it('can convert arguments to get params given argument names is defined', ()=>{
-      const get = buildMethod('/MyApi', http, {
+      const get = buildMethod({location:'/MyApi'}, http, {
         verb: 'get',
         args: ['param1', 'param2']
       });
@@ -55,7 +55,7 @@ describe('buildMethod', ()=>{
     });
 
     it('can convert arguments to get params with customize function', ()=>{
-      const get = buildMethod('/MyApi', http, {
+      const get = buildMethod({location:'/MyApi'}, http, {
         verb: 'get',
         args: ['param1', 'param2'],
         params: ({param1, param2})=>({combined: `${param1}:${param2}`})
@@ -68,7 +68,7 @@ describe('buildMethod', ()=>{
 
     it('can invoke success handler once request is done successfully', ()=>{
       const success = jest.fn();
-      const get = buildMethod('/MyApi', http, {
+      const get = buildMethod({location:'/MyApi'}, http, {
         verb: 'get',
         success
       });
@@ -84,7 +84,7 @@ describe('buildMethod', ()=>{
 
   describe("build post method", ()=>{
     it("call http post", ()=>{
-      const post = buildMethod('/MyApi', http, {
+      const post = buildMethod({location:'/MyApi'}, http, {
         verb: 'post'
       });
 
@@ -94,7 +94,7 @@ describe('buildMethod', ()=>{
     });
 
     it("call http post with path and data", ()=>{
-      const post = buildMethod('/MyApi', http, {
+      const post = buildMethod({location:'/MyApi'}, http, {
         verb: 'post',
         path: '/create'
       });
@@ -105,7 +105,7 @@ describe('buildMethod', ()=>{
     });
 
     it("can convert arguments to post data given argument names is defined",()=>{
-      const post = buildMethod('/MyApi', http, {
+      const post = buildMethod({location:'/MyApi'}, http, {
         verb: 'post',
         args: ["name", "age"]
       });
@@ -117,22 +117,22 @@ describe('buildMethod', ()=>{
 
 
     it("can convert arguments to post data with customize function",()=>{
-      const post = buildMethod('/MyApi', http, {
+      const post = buildMethod({location:'/MyApi'}, http, {
         verb: 'post',
         args: ["name", "age"],
-        data: ({name, age})=>({combied: `${name}:${age}`})
+        data: ({name, age})=>({combined: `${name}:${age}`})
       });
 
       post("Smith", 17);
 
-      expect(http.argsOf('post')).toEqual(['/MyApi', {combied: 'Smith:17'}]);
+      expect(http.argsOf('post')).toEqual(['/MyApi', {combined: 'Smith:17'}]);
     });
 
   });
 
   describe("build put method", ()=>{
     it("calls http put", ()=>{
-      const put = buildMethod('/MyApi', http, {
+      const put = buildMethod({location:'/MyApi'}, http, {
         verb: 'put'
       });
 
@@ -144,13 +144,13 @@ describe('buildMethod', ()=>{
 
   describe("build destroy method", ()=>{
     it("calls http delete", ()=>{
-      const destroy = buildMethod('/MyApi', http, {
+      const destroy = buildMethod({location:'/MyApi'}, http, {
         verb: 'delete'
       });
 
       destroy();
 
-      expect(http.argsOf('delete')).toEqual(['/MyApi', undefined]);
+      expect(http.argsOf('delete')).toEqual(['/MyApi', {}]);
     });
   });
 
