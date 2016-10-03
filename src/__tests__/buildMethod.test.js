@@ -11,7 +11,7 @@ describe('buildMethod', ()=>{
 
   describe("build get method", ()=>{
     it("calls http get", ()=>{
-      const get = buildMethod({location:'/MyApi'}, http, {
+      const get = buildMethod({base:'/MyApi'}, http, {
         verb: 'get'
       });
 
@@ -21,7 +21,7 @@ describe('buildMethod', ()=>{
     });
 
     it("calls http get with path", ()=>{
-      const get = buildMethod({location:'/MyApi'}, http, {
+      const get = buildMethod({base:'/MyApi'}, http, {
         verb: 'get',
         path: '/list'
       });
@@ -32,7 +32,7 @@ describe('buildMethod', ()=>{
     });
 
     it("can convert arguments to path element given argument names are defined", ()=>{
-      const get = buildMethod({location:'/MyApi'}, http, {
+      const get = buildMethod({base:'/MyApi'}, http, {
         verb: 'get',
         path: '/:id/list',
         args: ["id"]
@@ -44,7 +44,7 @@ describe('buildMethod', ()=>{
     });
 
     it('can convert arguments to get params given argument names is defined', ()=>{
-      const get = buildMethod({location:'/MyApi'}, http, {
+      const get = buildMethod({base:'/MyApi'}, http, {
         verb: 'get',
         args: ['param1', 'param2']
       });
@@ -55,7 +55,7 @@ describe('buildMethod', ()=>{
     });
 
     it('can convert arguments to get params with customize function', ()=>{
-      const get = buildMethod({location:'/MyApi'}, http, {
+      const get = buildMethod({base:'/MyApi'}, http, {
         verb: 'get',
         args: ['param1', 'param2'],
         params: ({param1, param2})=>({combined: `${param1}:${param2}`})
@@ -68,7 +68,7 @@ describe('buildMethod', ()=>{
 
     it('can invoke success handler once request is done successfully', ()=>{
       const success = jest.fn();
-      const get = buildMethod({location:'/MyApi'}, http, {
+      const get = buildMethod({base:'/MyApi'}, http, {
         verb: 'get',
         success
       });
@@ -84,7 +84,7 @@ describe('buildMethod', ()=>{
 
   describe("build post method", ()=>{
     it("call http post", ()=>{
-      const post = buildMethod({location:'/MyApi'}, http, {
+      const post = buildMethod({base:'/MyApi'}, http, {
         verb: 'post'
       });
 
@@ -94,7 +94,7 @@ describe('buildMethod', ()=>{
     });
 
     it("call http post with path and data", ()=>{
-      const post = buildMethod({location:'/MyApi'}, http, {
+      const post = buildMethod({base:'/MyApi'}, http, {
         verb: 'post',
         path: '/create'
       });
@@ -105,7 +105,7 @@ describe('buildMethod', ()=>{
     });
 
     it("can convert arguments to post data given argument names is defined",()=>{
-      const post = buildMethod({location:'/MyApi'}, http, {
+      const post = buildMethod({base:'/MyApi'}, http, {
         verb: 'post',
         args: ["name", "age"]
       });
@@ -117,7 +117,7 @@ describe('buildMethod', ()=>{
 
 
     it("can convert arguments to post data with customize function",()=>{
-      const post = buildMethod({location:'/MyApi'}, http, {
+      const post = buildMethod({base:'/MyApi'}, http, {
         verb: 'post',
         args: ["name", "age"],
         data: ({name, age})=>({combined: `${name}:${age}`})
@@ -132,7 +132,7 @@ describe('buildMethod', ()=>{
 
   describe("build put method", ()=>{
     it("calls http put", ()=>{
-      const put = buildMethod({location:'/MyApi'}, http, {
+      const put = buildMethod({base:'/MyApi'}, http, {
         verb: 'put'
       });
 
@@ -144,7 +144,7 @@ describe('buildMethod', ()=>{
 
   describe("build destroy method", ()=>{
     it("calls http delete", ()=>{
-      const destroy = buildMethod({location:'/MyApi'}, http, {
+      const destroy = buildMethod({base:'/MyApi'}, http, {
         verb: 'delete'
       });
 

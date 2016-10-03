@@ -6,11 +6,21 @@ describe('Api', ()=>{
 
   beforeEach(()=>{
     http = MockHttp();
-    User = Api({location:'/user', http, template});
+    User = Api({base:'/user', http, template});
   })
 
   pit("build collection method such as 'User.create(data)'", async ()=>{
+
+    // const User = Api({base:'/user', http, template:{
+    //   collection:{
+    //     create:{
+    //       verb: 'post'
+    //     }
+    //   }
+    // }});
+
     const user = {name:'name'}
+
     expect(User.create).toBeDefined();
 
     await User.create(user);
@@ -51,7 +61,7 @@ describe('Api', ()=>{
 
 const template = {
   restPath: true,
-  
+
   // Build collection method such as User.create(data)
   collection:{
     create:{

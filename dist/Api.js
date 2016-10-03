@@ -1,9 +1,15 @@
 'use strict';
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 var buildMethod = require('./buildMethod');
+var merge = require('lodash/merge');
+var isEmpty = require('lodash/isEmpty');
 
 var Api = function Api(_ref) {
-  var location = _ref.location;
+  var base = _ref.base;
   var resourceTemplate = _ref.template;
   var http = _ref.http;
 
@@ -17,7 +23,15 @@ var Api = function Api(_ref) {
 
     var remote = remoteObject(location, collection);
     var fn = function fn(id) {
-      var instanceLocation = location + '/' + id;
+
+      var instanceLocation = void 0;
+      if (!isEmpty(location.relations)) {
+        var relation = location.relations[location.relations.length - 1];
+        instanceLocation = merge(_defineProperty({}, relation + 'Id', id), location);
+      } else {
+        instanceLocation = merge({ id: id }, location);
+      }
+
       var remoteObj = remoteObject(instanceLocation, instance);
       if (relations) {
         remoteObj = Object.assign(remoteObj, relationObject(instanceLocation, relations));
@@ -41,7 +55,7 @@ var Api = function Api(_ref) {
       if (typeof method === 'function') {
         remote[prop] = method(location, http);
       } else {
-        remote[prop] = buildMethod(location, http, method);
+        remote[prop] = buildMethod(location, http, merge({ restPath: !!resourceTemplate.restPath }, method));
       }
       return remote;
     }, {});
@@ -59,7 +73,7 @@ var Api = function Api(_ref) {
     if (many) {
       Object.keys(many).reduce(function (memo, relationName) {
         var template = many[relationName];
-        var relationLocation = location + '/' + relationName;
+        var relationLocation = merge({ relations: [].concat(_toConsumableArray(location.relations || []), [relationName]) }, location);
 
         memo[relationName] = functionObject(relationLocation, template);
         return memo;
@@ -69,7 +83,7 @@ var Api = function Api(_ref) {
     if (one) {
       Object.keys(one).reduce(function (memo, relationName) {
         var template = one[relationName];
-        var relationLocation = location + '/' + relationName;
+        var relationLocation = merge({ relations: [].concat(_toConsumableArray(location.relations || []), [relationName]) }, location);
 
         var remoteObj = remoteObject(relationLocation, template.instance || {});
         if (template.relations) {
@@ -82,12 +96,7 @@ var Api = function Api(_ref) {
     return relationObj;
   };
 
-  // return (pathStr, template)=>{
-  //   const path = UrlPath(pathStr);
-  //   return functionObject(path, template);
-  // }
-
-  return functionObject(location, resourceTemplate);
+  return functionObject({ base: base }, resourceTemplate);
 };
 
 module.exports = Api;

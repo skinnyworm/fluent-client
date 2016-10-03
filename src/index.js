@@ -7,13 +7,13 @@ const FluentClient = (opts = {})=>{
   let {template:_template, http:_http, ...httpCfg} = opts;
   const http = _http || Http(httpCfg)
   const api = {http}
-  
-  const define = (name, {location, template}, reduceFn)=>{
+
+  const define = (name, {base, template}, reduceFn)=>{
     let initial = template || _template;
     if (!initial){
       throw "Must define an api template"
     }
-    api[name] = Api({location, http, template:reduceTemplate(initial, reduceFn)});
+    api[name] = Api({base, http, template:reduceTemplate(initial, reduceFn)});
     return api;
   }
 

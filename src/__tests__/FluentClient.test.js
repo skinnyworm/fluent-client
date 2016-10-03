@@ -19,7 +19,7 @@ describe('FluentClient', ()=>{
   });
 
   pit('can define an api resource', async ()=>{
-    fluentClient.define('User', {location:'/users'}, (user)=>{
+    fluentClient.define('User', {base:'/users'}, (user)=>{
       user.collection({
         login: {
           verb: 'post',
@@ -45,7 +45,7 @@ describe('FluentClient', ()=>{
 
   describe('optional restfulTemplate', ()=>{
     it('has standard restful crud methods', ()=>{
-      fluentClient.define('Post', {location:'/projects'})
+      fluentClient.define('Post', {base:'/projects'})
 
       expect(fluentClient.Post).toBeDefined();
       expect(fluentClient.Post.find).toBeDefined();

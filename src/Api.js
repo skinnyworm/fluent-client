@@ -3,7 +3,7 @@ const merge = require('lodash/merge');
 const isEmpty = require('lodash/isEmpty');
 
 
-const Api = ({location, template:resourceTemplate, http})=>{
+const Api = ({base, template:resourceTemplate, http})=>{
   /**
    * Build a function object from template
    */
@@ -82,7 +82,7 @@ const Api = ({location, template:resourceTemplate, http})=>{
     return relationObj;
   };
 
-  return functionObject({location}, resourceTemplate)
+  return functionObject({base}, resourceTemplate)
 }
 
 module.exports = Api;

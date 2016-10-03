@@ -10,150 +10,121 @@ var _isEmpty2 = _interopRequireDefault(_isEmpty);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
-var remote = function remote(http) {
-
-  var namedArgs = function namedArgs(argNames, args) {
-    return argNames.reduce(function (memo, name, i) {
-      var arg = args[i];
-      if (arg) {
-        memo[name] = arg;
-      }
-      return memo;
-    }, {});
-  };
-
-  var evalPath = function evalPath(path, props) {
-    path = path.replace(/\/:[^\/]*/g, function (s) {
-      var name = s.substr(2);
-      var value = props[name];
-      if (value) {
-        delete props[name];
-        return '/' + value;
-      } else {
-        return s;
-      }
-    });
-    return { path: path, props: props };
-  };
-
-  var resolveArgs = function resolveArgs(args, opts) {
-    var argNames = opts.args;
-    var location = opts.location;
-    var path = opts.path;
-    var convertFn = opts.convertFn;
-    var props = opts.props;
-
-
-    if (!argNames) {
-      return { path: [location, path].join(''), props: props };
-    } else {
-      props = namedArgs(argNames, args);
-
-      /** need to evaluate path components*/
-      if (path && path.match(/\/:[^\/]*/)) {
-        var _evalPath = evalPath(path, props);
-
-        var props = _evalPath.props;
-        var path = _evalPath.path;
-      }
-
-      /** need to convert props with customize function*/
-      if (convertFn) {
-        props = convertFn(props);
-      }
-
-      /** FIXME:: Make empty object as undefined props? **/
-      if ((0, _isEmpty2.default)(props)) {
-        props = undefined;
-      }
-
-      return { path: [location, path].join(''), props: props };
+var namedArgs = function namedArgs(argNames, args) {
+  return argNames.reduce(function (memo, name, i) {
+    var arg = args[i];
+    if (arg) {
+      memo[name] = arg;
     }
-  };
-
-  var successFn = function successFn(_ref) {
-    var success = _ref.success;
-
-    return !!success ? success : function (result) {
-      return result;
-    };
-  };
-
-  return {
-    get: function get(location, opts) {
-      return function () {
-        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-          args[_key] = arguments[_key];
-        }
-
-        var _resolveArgs = resolveArgs(args, (0, _merge2.default)({ location: location, props: undefined, convertFn: opts.params }, opts));
-
-        var path = _resolveArgs.path;
-        var params = _resolveArgs.props;
-
-        return http.get(path, params).then(successFn(opts));
-      };
-    },
-
-    delete: function _delete(location, opts) {
-      return function () {
-        for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-          args[_key2] = arguments[_key2];
-        }
-
-        var _resolveArgs2 = resolveArgs(args, (0, _merge2.default)({ location: location, props: undefined, convertFn: opts.params }, opts));
-
-        var path = _resolveArgs2.path;
-        var data = _resolveArgs2.props;
-
-        return http.delete(path, data).then(successFn(opts));
-      };
-    },
-
-    post: function post(location, opts) {
-      return function () {
-        for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-          args[_key3] = arguments[_key3];
-        }
-
-        var _resolveArgs3 = resolveArgs(args, (0, _merge2.default)({ location: location, props: args[0], convertFn: opts.data }, opts));
-
-        var path = _resolveArgs3.path;
-        var data = _resolveArgs3.props;
-
-        return http.post(path, data).then(successFn(opts));
-      };
-    },
-
-    put: function put(location, opts) {
-      return function () {
-        for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-          args[_key4] = arguments[_key4];
-        }
-
-        var _resolveArgs4 = resolveArgs(args, (0, _merge2.default)({ location: location, props: args[0], convertFn: opts.data }, opts));
-
-        var path = _resolveArgs4.path;
-        var data = _resolveArgs4.props;
-
-        return http.put(path, data).then(successFn(opts));
-      };
-    }
-  };
+    return memo;
+  }, {});
 };
 
-var buildMethod = function buildMethod(uri, http, config) {
+var evalPath = function evalPath(path, props) {
+  path = path.replace(/\/:[^\/]*/g, function (s) {
+    var name = s.substr(2);
+    var value = props[name];
+    if (value) {
+      delete props[name];
+      return '/' + value;
+    } else {
+      return s;
+    }
+  });
+  return { path: path, props: props };
+};
+
+/**
+ * opts cal include following fields
+ * - args -> mapping args from index to named props
+ * - base -> uri base path to be override on location
+ * - path -> uri path to be set on location
+ * - location -> location object
+ * - params -> alias to convertFn to convert props to actual request data
+ * - data -> alias to convertFn to convert props to actual request data
+ * - restPath -> flag to indicate if need to construct rest path
+ *
+ */
+var resolveArgs = function resolveArgs(args, opts) {
+  // args
+  var props = void 0;
+  if (opts.args) {
+    props = namedArgs(opts.args, args);
+  } else {
+    props = args[0];
+  }
+
+  // merge location ids with props
+  var location = (0, _merge2.default)({}, opts.location, { base: opts.base, path: opts.path });
+  var base = location.base;
+  var path = location.path;
+  var relations = location.relations;
+
+  var ids = _objectWithoutProperties(location, ['base', 'path', 'relations']);
+
+  props = (0, _merge2.default)({}, props, ids);
+
+  // need to convert props with customize function
+  var convertFn = opts.params || opts.data;
+  if (convertFn) {
+    props = convertFn(props);
+  }
+
+  // make path from base
+  var pathComponents = [base];
+
+  // make rest path with id and relations
+  if (opts.restPath) {
+    if (props.id) {
+      pathComponents = [].concat(_toConsumableArray(pathComponents), ["/:id"]);
+    }
+
+    if (relations) {
+      var relationComponents = relations.map(function (relation) {
+        var idKey = relation + 'Id';
+        return props[idKey] ? '/' + relation + '/:' + idKey : '/' + relation;
+      });
+      pathComponents = [].concat(_toConsumableArray(pathComponents), _toConsumableArray(relationComponents));
+    }
+  }
+
+  // append path to the end of location.
+  if (path) {
+    pathComponents = [].concat(_toConsumableArray(pathComponents), [path]);
+  }
+
+  return evalPath(pathComponents.join(''), props);
+};
+
+module.exports = function (location, http, config) {
   var verb = config.verb;
+  var success = config.success;
 
-  var opts = _objectWithoutProperties(config, ['verb']);
+  var others = _objectWithoutProperties(config, ['verb', 'success']);
 
-  var method = remote(http)[verb];
+  var opts = (0, _merge2.default)({ location: location }, others);
+
+  var method = http[verb];
   if (!method) {
     throw 'Can not build method of verb: ' + verb;
   }
-  return method(uri, opts);
-};
 
-module.exports = buildMethod;
+  return function () {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    var _resolveArgs = resolveArgs(args, opts);
+
+    var path = _resolveArgs.path;
+    var props = _resolveArgs.props;
+
+    return method(path, props).then(function (response) {
+      return !!success ? success(response) : response;
+    });
+  };
+};

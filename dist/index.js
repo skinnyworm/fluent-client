@@ -16,15 +16,16 @@ var FluentClient = function FluentClient() {
 
   var http = _http || Http(httpCfg);
   var api = { http: http };
+
   var define = function define(name, _ref, reduceFn) {
-    var location = _ref.location;
+    var base = _ref.base;
     var template = _ref.template;
 
     var initial = template || _template;
     if (!initial) {
       throw "Must define an api template";
     }
-    api[name] = Api({ location: location, http: http, template: reduceTemplate(initial, reduceFn) });
+    api[name] = Api({ base: base, http: http, template: reduceTemplate(initial, reduceFn) });
     return api;
   };
 
