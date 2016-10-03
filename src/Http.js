@@ -1,106 +1,64 @@
-import merge from 'lodash/merge';
-import isEmpty from 'lodash/isEmpty';
+const merge = require('lodash/merge');
 
-export const jsonFormat = {
-  encode: (data)=>{
-    if(data){
-      return {
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
+const jsonDecode = (response)=> {
+  return response.json()
+    .then(json=>{
+      if (!response.ok) {
+        return Promise.reject(json)
       }
-    }else{
-      return {}
-    }
-  },
+      return json;
+    });
+}
 
-  decode: (response)=>{
-    const contentType = response.headers.get('Content-Type');
-    const contentLength = response.headers.get('Content-Length');
-
-    if(Number(contentLength) > 0){
-      return response.json().then(json => {
-        if (!response.ok) {
-          return Promise.reject(json)
-        }
-        return json;
-      })
-    }else{
-      return response.ok ? Promise.resolve(true) : Promise.reject(false);
-    }
+const jsonEncode = (data)=>{
+  const body = JSON.stringify(data)||''
+  return {
+    headers: {'Content-Type': 'application/json'},
+    body: body,
   }
 }
 
-export const urlBuilder = (apiBase, defaultParams={})=>{
-  return function buildUrl(path, params={}){
-    if(typeof(defaultParams) === 'function'){
-      params = merge({}, params, defaultParams());
-    }else{
-      params = merge({}, params, defaultParams)
-    }
-
-    let url = [apiBase, path].join('');
-    if(!isEmpty(params)){
-      const query = Object.keys(params).map(key=>`${key}=${encodeURIComponent(params[key])}`).join('&');
-      url = `${url}?${query}`
-    }
-    return url;
+/**
+ * @param fetch:function  - fetch implementation
+ * @param url - A function to resolve url (path:String, params:Object):String
+ * @param encode - A function to encode request body from object
+ * @param decode - A function to decode response body to object
+ * @param init - A function to resolve init options for fetch request
+ */
+const Http = ({fetch, url, encode, decode, init})=>{
+  if(!fetch){
+    throw 'Must provide a fetch implementation when create http'
   }
-}
 
-export const headerBuilder = (defaultHeaders={})=>{
-  return function buildHeaders(headers={}){
-    if(typeof(defaultHeaders) === 'function'){
-      return merge({}, headers, defaultHeaders());
-    }else{
-      return merge({}, headers, defaultHeaders)
-    }
+  if(!url){
+    throw 'Must provide a url with endpoint when create http'
   }
-}
 
-export default function Http(opts={}){
-  let {url: buildUrl, headers: buildHeaders, format} = opts;
+  encode = encode || jsonEncode;
+  decode = decode || jsonDecode;
 
-  buildUrl = buildUrl || urlBuilder('http://localhost');
-  buildHeaders = buildHeaders || headerBuilder();
-  format = format || jsonFormat;
+  function resolve(path, params){
+    return Promise.all([url(path, params), init && init()])
+  }
+
+  const requestWithParams = (method)=> (path, params)=> {
+    return resolve(path, params)
+      .then(([url, config])=>fetch(url, merge({}, config, {method})))
+      .then((response)=>decode(response))
+  }
+
+  const requestWithBody = (method)=> (path, data)=> {
+    return resolve(path)
+      .then(([url, config])=> fetch(url, merge({}, config, encode(data), {method})))
+      .then((response)=>decode(response))
+  }
 
   return {
-    get(path, params=null){
-      return fetch(buildUrl(path, params),{
-        method: 'GET',
-        headers: buildHeaders(),
-      }).then(format.decode);
-    },
-
-    post(path, data){
-      const {body, headers:contentTypeHeaders} = format.encode(data);
-      let fetchOptions = {
-        method: 'POST',
-        headers: buildHeaders(contentTypeHeaders),
-      }
-      if(!isEmpty(body)){
-        fetchOptions = merge(fetchOptions, {body});
-      }
-      return fetch(buildUrl(path), fetchOptions).then(format.decode);
-    },
-
-    put(path, data){
-      const {body, headers:contentTypeHeaders} = format.encode(data);
-      let fetchOptions = {
-        method: 'PUT',
-        headers: buildHeaders(contentTypeHeaders),
-      }
-      if(!isEmpty(body)){
-        fetchOptions = merge(fetchOptions, {body});
-      }
-      return fetch(buildUrl(path), fetchOptions).then(format.decode);
-    },
-
-    delete(path){
-      return fetch(buildUrl(path),{
-        method: 'DELETE',
-        headers: buildHeaders(),
-      }).then(format.decode);
-    }
+    get: requestWithParams('GET'),
+    delete: requestWithParams('DELETE'),
+    post: requestWithBody('POST'),
+    put: requestWithBody('PUT')
   }
 }
+
+module.exports = Http;
