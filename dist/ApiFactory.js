@@ -3,17 +3,17 @@
 var createApi = require('./createApi');
 var reduceTemplate = require('./reduceTemplate');
 
-module.exports = function ApiFactory(_ref) {
-  var http = _ref.http;
-  var baseTemplate = _ref.template;
+module.exports = function ApiFactory(opts) {
+  var http = opts.http;
+  var baseTemplate = opts.template;
 
   if (!http) {
     throw "Must provide a http instance.";
   }
 
-  return function (_ref2, reduceFn) {
-    var base = _ref2.base;
-    var template = _ref2.template;
+  return function (_ref, reduceFn) {
+    var base = _ref.base;
+    var template = _ref.template;
 
     var initial = template || baseTemplate;
     if (!initial) {
