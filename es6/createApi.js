@@ -3,7 +3,7 @@ const merge = require('lodash/merge');
 const isEmpty = require('lodash/isEmpty');
 
 
-const Api = ({base, template:resourceTemplate, http})=>{
+const createApi = ({http, base, template:resourceTemplate})=>{
   /**
    * Build a function object from template
    */
@@ -85,4 +85,4 @@ const Api = ({base, template:resourceTemplate, http})=>{
   return functionObject({base}, resourceTemplate)
 }
 
-module.exports = Api;
+module.exports = createApi;

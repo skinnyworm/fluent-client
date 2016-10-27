@@ -1,26 +1,16 @@
 const MockHttp = require('../__mocks__/MockHttp');
-const Api = require('../Api');
+const createApi = require('../createApi');
 
-describe('Api', ()=>{
+describe('createApi', ()=>{
   let User, http;
 
   beforeEach(()=>{
     http = MockHttp();
-    User = Api({base:'/user', http, template});
+    User = createApi({base:'/user', http, template});
   })
 
   pit("build collection method such as 'User.create(data)'", async ()=>{
-
-    // const User = Api({base:'/user', http, template:{
-    //   collection:{
-    //     create:{
-    //       verb: 'post'
-    //     }
-    //   }
-    // }});
-
     const user = {name:'name'}
-
     expect(User.create).toBeDefined();
 
     await User.create(user);

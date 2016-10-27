@@ -8,10 +8,10 @@ var buildMethod = require('./buildMethod');
 var merge = require('lodash/merge');
 var isEmpty = require('lodash/isEmpty');
 
-var Api = function Api(_ref) {
+var createApi = function createApi(_ref) {
+  var http = _ref.http;
   var base = _ref.base;
   var resourceTemplate = _ref.template;
-  var http = _ref.http;
 
   /**
    * Build a function object from template
@@ -99,4 +99,4 @@ var Api = function Api(_ref) {
   return functionObject({ base: base }, resourceTemplate);
 };
 
-module.exports = Api;
+module.exports = createApi;
