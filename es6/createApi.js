@@ -1,9 +1,11 @@
-const buildMethod = require('./buildMethod');
+const MethodBuilder = require('./MethodBuilder');
 const merge = require('lodash/merge');
 const isEmpty = require('lodash/isEmpty');
 
 
 const createApi = ({http, base, template:resourceTemplate})=>{
+  const buildMethod = MethodBuilder(resourceTemplate.config);
+
   /**
    * Build a function object from template
    */
@@ -43,7 +45,7 @@ const createApi = ({http, base, template:resourceTemplate})=>{
       if(typeof(method) === 'function'){
         remote[prop] = method(location, http);
       }else{
-        remote[prop] = buildMethod(location, http, merge({restPath: !!resourceTemplate.restPath}, method));
+        remote[prop] = buildMethod(location, http, method);
       }
       return remote;
     }, {});

@@ -4,7 +4,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var buildMethod = require('./buildMethod');
+var MethodBuilder = require('./MethodBuilder');
 var merge = require('lodash/merge');
 var isEmpty = require('lodash/isEmpty');
 
@@ -12,6 +12,8 @@ var createApi = function createApi(_ref) {
   var http = _ref.http;
   var base = _ref.base;
   var resourceTemplate = _ref.template;
+
+  var buildMethod = MethodBuilder(resourceTemplate.config);
 
   /**
    * Build a function object from template
@@ -55,7 +57,7 @@ var createApi = function createApi(_ref) {
       if (typeof method === 'function') {
         remote[prop] = method(location, http);
       } else {
-        remote[prop] = buildMethod(location, http, merge({ restPath: !!resourceTemplate.restPath }, method));
+        remote[prop] = buildMethod(location, http, method);
       }
       return remote;
     }, {});
