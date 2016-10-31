@@ -74,7 +74,7 @@ function resolvePath(memo, opts){
 
 
 module.exports = (buildConfig={})=> (location, http, config)=>{
-  const buildPathTemplate = config.buildPathTemplate || buildRestPathTemplate;
+  const buildPathTemplate = buildConfig.buildPathTemplate || config.buildPathTemplate || buildRestPathTemplate;
   const {verb, success, base, path, args: argNames} = config;
   const convertFn = config.params || config.data;
   const method = http[verb];

@@ -1,6 +1,6 @@
 {
   "name": "fluent-client",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Build fluent api client",
   "main": "dist/index.js",
   "repository": {

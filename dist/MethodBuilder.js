@@ -93,7 +93,7 @@ function resolvePath(memo, opts) {
 module.exports = function () {
   var buildConfig = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
   return function (location, http, config) {
-    var buildPathTemplate = config.buildPathTemplate || buildRestPathTemplate;
+    var buildPathTemplate = buildConfig.buildPathTemplate || config.buildPathTemplate || buildRestPathTemplate;
     var verb = config.verb;
     var success = config.success;
     var base = config.base;
